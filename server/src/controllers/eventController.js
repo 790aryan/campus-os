@@ -28,9 +28,34 @@ export const listMyClubEvents = asyncHandler(async (req, res) => {
 
 export const getEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
+
   if (!event) throw new ApiError(404, "Event not found");
-  if (event.status !== "active" && req.user?.role !== "super_admin" && String(event.clubAdmin) !== String(req.user?._id)) throw new ApiError(404, "Event not found");
-  res.json(event);
+
+  if (
+    event.status !== "active" &&
+    req.user?.role !== "super_admin" &&
+    String(event.clubAdmin) !== String(req.user?._id)
+  ) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  let isRegistered = false;
+
+  if (req.user?.role === "student") {
+
+  const registration = await EventRegistration.findOne({
+    event: event._id,
+    student: req.user._id,
+    status: "registered"
+  });
+
+  isRegistered = !!registration;
+}
+
+  res.json({
+    ...event.toObject(),
+    isRegistered
+  });
 });
 
 export const createEvent = asyncHandler(async (req, res) => {

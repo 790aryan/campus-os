@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/", listEvents);
 router.get("/club/stats", protect, authorize("club_admin", "super_admin"), clubStats);
 router.get("/club/mine", protect, authorize("club_admin"), listMyClubEvents);
-router.get("/:id", getEvent);
+router.get("/:id", protect, getEvent);
 router.post("/", protect, authorize("club_admin"), upload.single("poster"), createEvent);
 router.put("/:id", protect, authorize("club_admin", "super_admin"), upload.single("poster"), updateEvent);
 router.delete("/:id", protect, authorize("club_admin", "super_admin"), deleteEvent);

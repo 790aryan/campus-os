@@ -10,20 +10,38 @@ export default function EventDetailsPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [event, setEvent] = useState(null);
-  useEffect(() => { api.get(`/events/${id}`).then(({ data }) => setEvent(data)); }, [id]);
+  useEffect(() => { api.get(`/events/${id}`).then(({ data }) => {
+  console.log(data);
+  setEvent(data);
+});}, [id]);
   const register = async () => {
     try {
       await api.post(`/registrations/${id}`);
       toast.success("Registered");
-      setEvent((current) => ({ ...current, registrationCount: current.registrationCount + 1 }));
+      setEvent((current) => ({
+              ...current,
+              registrationCount: current.registrationCount + 1,
+              isRegistered: true
+            }));
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
     }
   };
   const unregister = async () => {
+  try {
     await api.delete(`/registrations/${id}`);
+
     toast.success("Unregistered");
-  };
+
+    setEvent((current) => ({
+      ...current,
+      registrationCount: Math.max(0, current.registrationCount - 1),
+      isRegistered: false
+    }));
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed");
+  }
+};
   if (!event) return <p className="text-sm text-neutral-500">Loading event...</p>;
   return (
     <div className="card overflow-hidden">
@@ -41,7 +59,25 @@ export default function EventDetailsPage() {
         </div>
         <p className="text-sm text-neutral-600">Deadline: {formatDate(event.deadline)}</p>
         <div className="flex flex-wrap gap-2">{event.tags.map((tag) => <span key={tag} className="rounded-md bg-mist px-2 py-1 text-xs font-bold">{tag}</span>)}</div>
-        {user?.role === "student" && <div className="flex gap-3"><button className="btn-primary" onClick={register}>Register</button><button className="btn-secondary" onClick={unregister}>Unregister</button></div>}
+        {user?.role === "student" && (
+  <div className="flex gap-3">
+    {event.isRegistered ? (
+      <button
+        className="btn-secondary"
+        onClick={unregister}
+      >
+        Unregister
+      </button>
+    ) : (
+      <button
+        className="btn-primary"
+        onClick={register}
+      >
+        Register
+      </button>
+    )}
+  </div>
+)}
       </div>
     </div>
   );
