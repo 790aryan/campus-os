@@ -18,9 +18,36 @@ export default function EventForm({ initialEvent, onSubmit, submitting }) {
   });
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const submit = (e) => {
-    e.preventDefault();
-    onSubmit({ ...form, tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean), capacity: Number(form.capacity) });
-  };
+  e.preventDefault();
+
+  const now = new Date();
+  const deadline = new Date(form.deadline);
+  const eventDate = new Date(form.eventDate);
+
+  if (eventDate <= now) {
+    alert("Event date must be in the future");
+    return;
+  }
+
+  if (deadline <= now) {
+    alert("Registration deadline must be in the future");
+    return;
+  }
+
+  if (deadline >= eventDate) {
+    alert("Registration deadline must be before the event date");
+    return;
+  }
+
+  onSubmit({
+    ...form,
+    tags: form.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean),
+    capacity: Number(form.capacity)
+  });
+};
   return (
     <form onSubmit={submit} className="card grid gap-4 p-5">
       <div className="grid gap-4 md:grid-cols-2">

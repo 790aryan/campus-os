@@ -62,6 +62,23 @@ export const createEvent = asyncHandler(async (req, res) => {
   let poster = { url: req.body.posterUrl || "", publicId: "" };
   if (req.file) poster = await uploadImageBuffer(req.file.buffer);
   const club = await ClubProfile.findOne({ user: req.user._id });
+  const deadline = new Date(req.body.deadline);
+const eventDate = new Date(req.body.eventDate);
+
+if (eventDate <= new Date()) {
+  throw new ApiError(400, "Event date must be in the future");
+}
+
+if (deadline <= new Date()) {
+  throw new ApiError(400, "Registration deadline must be in the future");
+}
+
+if (deadline >= eventDate) {
+  throw new ApiError(
+    400,
+    "Registration deadline must be before the event date"
+  );
+}
   const event = await Event.create({
     ...req.body,
     tags: req.body.tags || [],
@@ -78,6 +95,42 @@ export const updateEvent = asyncHandler(async (req, res) => {
   ensureOwner(event, req.user);
   if (req.file) event.poster = await uploadImageBuffer(req.file.buffer);
   Object.assign(event, req.body, { tags: req.body.tags || event.tags });
+    if (
+    req.body.capacity &&
+    Number(req.body.capacity) < event.registrationCount
+  ) {
+    throw new ApiError(
+      400,
+      `Capacity cannot be less than current registrations (${event.registrationCount})`
+    );
+  }
+  const deadline = new Date(event.deadline);
+  const eventDate = new Date(event.eventDate);
+
+
+  if (eventDate <= new Date()) {
+    throw new ApiError(400, "Event date must be in the future");
+  }
+
+  if (deadline <= new Date()) {
+    throw new ApiError(400, "Registration deadline must be in the future");
+  }
+
+  if (deadline >= eventDate) {
+    throw new ApiError(
+      400,
+      "Registration deadline must be before the event date"
+    );
+  }
+
+  if (
+    event.status === "archived" &&
+    deadline > new Date()
+  ) {
+    event.status = "active";
+    event.archiveReason = "";
+  }
+
   await event.save();
   res.json(event);
 });

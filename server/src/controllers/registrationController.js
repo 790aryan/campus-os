@@ -36,5 +36,12 @@ export const unregisterFromEvent = asyncHandler(async (req, res) => {
 
 export const myRegistrations = asyncHandler(async (req, res) => {
   const registrations = await EventRegistration.find({ student: req.user._id, status: "registered" }).populate("event").sort({ createdAt: -1 });
-  res.json(registrations.filter((item) => item.event));
+  res.json(
+  registrations.filter(
+    (item) =>
+      item.event &&
+      item.event.status === "active" &&
+      new Date(item.event.deadline) > new Date()
+  )
+);
 });

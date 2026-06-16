@@ -20,8 +20,20 @@ const fallbackRecommendations = (events, interests) =>
 export const getRecommendationsForStudent = async (studentId) => {
   const cached = await RecommendationCache.findOne({ student: studentId, expiresAt: { $gt: new Date() } }).populate("eventIds");
   if (cached?.eventIds?.length) {
-    return cached.eventIds.map((event) => ({ event, reason: cached.reasonMap?.get(String(event._id)) || "Recommended for you" }));
-  }
+  const activeEvents = cached.eventIds.filter(
+    (event) =>
+      event &&
+      event.status === "active" &&
+      new Date(event.deadline) > new Date()
+  );
+
+  return activeEvents.map((event) => ({
+    event,
+    reason:
+      cached.reasonMap?.get(String(event._id)) ||
+      "Recommended for you"
+  }));
+}
 
   const profile = await StudentProfile.findOne({ user: studentId });
   const interests = profile?.interests || [];

@@ -10,9 +10,17 @@ export default function EditEventPage() {
   const [event, setEvent] = useState(null);
   useEffect(() => { api.get(`/events/${id}`).then(({ data }) => setEvent(data)); }, [id]);
   const submit = async (payload) => {
+  try {
     await api.put(`/events/${id}`, payload);
+
     toast.success("Event updated");
     navigate("/club");
-  };
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message ||
+      "Failed to update event"
+    );
+  }
+};
   return <div className="space-y-4"><h1 className="text-2xl font-black">Edit event</h1>{event && <EventForm initialEvent={event} onSubmit={submit} />}</div>;
 }

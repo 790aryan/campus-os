@@ -10,10 +10,23 @@ export default function EventDetailsPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [event, setEvent] = useState(null);
-  useEffect(() => { api.get(`/events/${id}`).then(({ data }) => {
-  console.log(data);
-  setEvent(data);
-});}, [id]);
+  const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+
+useEffect(() => {
+  const fetchEvent = async () => {
+    try {
+      const { data } = await api.get(`/events/${id}`);
+      setEvent(data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Event not found");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEvent();
+}, [id]);
   const register = async () => {
     try {
       await api.post(`/registrations/${id}`);
@@ -42,7 +55,20 @@ export default function EventDetailsPage() {
     toast.error(error.response?.data?.message || "Failed");
   }
 };
-  if (!event) return <p className="text-sm text-neutral-500">Loading event...</p>;
+ if (loading) {
+  return <p className="text-sm text-neutral-500">Loading event...</p>;
+}
+
+if (error) {
+  return (
+    <div className="card p-6">
+      <h2 className="text-xl font-bold">Event not found</h2>
+      <p className="text-neutral-600 mt-2">
+        This event is unavailable or has been moderated.
+      </p>
+    </div>
+  );
+}
   return (
     <div className="card overflow-hidden">
       <div className="h-64 bg-neutral-200">{event.poster?.url && <img src={event.poster.url} alt={event.title} className="h-full w-full object-cover" />}</div>
