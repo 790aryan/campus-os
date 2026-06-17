@@ -33,6 +33,8 @@ const run = async () => {
     isApproved: true
   });
 
+
+
   await StudentProfile.create({
     user: student._id,
     rollNumber: "CSE2026001",

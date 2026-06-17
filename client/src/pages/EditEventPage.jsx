@@ -8,7 +8,28 @@ export default function EditEventPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
-  useEffect(() => { api.get(`/events/${id}`).then(({ data }) => setEvent(data)); }, [id]);
+  const currentUser = JSON.parse(
+  localStorage.getItem("campus_user") || "null"
+);
+  useEffect(() => {
+  api.get(`/events/${id}`)
+    .then(({ data }) => {
+      if (
+        currentUser?.role === "club_admin" &&
+        data.clubAdmin !== currentUser._id
+      ) {
+        toast.error("You are not allowed to edit this event");
+        navigate("/club");
+        return;
+      }
+
+      setEvent(data);
+    })
+    .catch(() => {
+      toast.error("Event not found");
+      navigate("/club");
+    });
+}, [id, navigate, currentUser]);
   const submit = async (payload) => {
   try {
     await api.put(`/events/${id}`, payload);
