@@ -84,7 +84,7 @@ if (deadline >= eventDate) {
     tags: req.body.tags || [],
     poster,
     clubAdmin: req.user._id,
-    clubName: req.body.clubName || club?.clubName
+    clubName: club?.clubName
   });
   res.status(201).json(event);
 });
@@ -94,7 +94,15 @@ export const updateEvent = asyncHandler(async (req, res) => {
   if (!event) throw new ApiError(404, "Event not found");
   ensureOwner(event, req.user);
   if (req.file) event.poster = await uploadImageBuffer(req.file.buffer);
-  Object.assign(event, req.body, { tags: req.body.tags || event.tags });
+      const {
+      clubName,
+      clubAdmin,
+      ...allowedFields
+    } = req.body;
+
+  Object.assign(event, allowedFields, {
+    tags: req.body.tags || event.tags
+  });
     if (
     req.body.capacity &&
     Number(req.body.capacity) < event.registrationCount
