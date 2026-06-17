@@ -5,28 +5,43 @@ import { RecommendationCache } from "../models/RecommendationCache.js";
 
 const openai = () => (process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null);
 
+const normalize = (text) => String(text).toLowerCase().trim();
+
 const scoreEvent = (event, interests) => {
-  const haystack = `${event.title} ${event.description} ${event.category} ${event.tags.join(" ")}`.toLowerCase();
-  return interests.reduce((score, interest) => score + (haystack.includes(interest.toLowerCase()) ? 3 : 0), 0);
+  const eventTags = new Set((event.tags || []).map(normalize));
+  const studentInterests = interests.map(normalize);
+
+  return studentInterests.reduce(
+    (score, interest) => score + (eventTags.has(interest) ? 3 : 0),
+    0
+  );
 };
 
 const fallbackRecommendations = (events, interests) =>
   events
-    .map((event) => ({ event, score: scoreEvent(event, interests) + Math.max(0, 5 - Math.ceil((event.eventDate - Date.now()) / 86400000)) }))
+    .map((event) => ({
+      event,
+      score: scoreEvent(event, interests)
+    }))
+    .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8)
-    .map(({ event, score }) => ({ event, reason: score > 0 ? "Matches your interests and upcoming activity" : "Popular upcoming event" }));
+    .map(({ event }) => ({
+      event,
+      reason: "Matches your interests"
+    }));
 
 export const getRecommendationsForStudent = async (studentId) => {
+
   const cached = await RecommendationCache.findOne({ student: studentId, expiresAt: { $gt: new Date() } }).populate("eventIds");
   if (cached?.eventIds?.length) {
   const activeEvents = cached.eventIds.filter(
-    (event) =>
-      event &&
-      event.status === "active" &&
-      new Date(event.deadline) > new Date()
+  (event) =>
+    event &&
+    event.status === "active" &&
+    new Date(event.deadline) > new Date() &&
+    new Date(event.eventDate) > new Date()
   );
-
   return activeEvents.map((event) => ({
     event,
     reason:
@@ -39,7 +54,6 @@ export const getRecommendationsForStudent = async (studentId) => {
   const interests = profile?.interests || [];
   const events = await Event.find({ status: "active", deadline: { $gt: new Date() } }).sort({ eventDate: 1 }).limit(50);
   let recommendations = fallbackRecommendations(events, interests);
-
   const client = openai();
   if (client && events.length && interests.length) {
     try {
@@ -79,7 +93,7 @@ export const getRecommendationsForStudent = async (studentId) => {
       student: studentId,
       eventIds: recommendations.map((item) => item.event._id),
       reasonMap: Object.fromEntries(recommendations.map((item) => [String(item.event._id), item.reason])),
-      expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000)
     },
     { upsert: true, new: true }
   );

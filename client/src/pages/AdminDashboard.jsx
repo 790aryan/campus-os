@@ -19,9 +19,15 @@ export default function AdminDashboard() {
     toast.success("Club status updated");
     load();
   };
-  const moderate = async (id, status) => {
+    const moderate = async (id, status) => {
     await api.patch(`/admin/events/${id}/moderate`, { status });
-    toast.success("Event moderated");
+
+    toast.success(
+      status === "active"
+        ? "Event activated"
+        : "Event moderated"
+    );
+
     load();
   };
   return (

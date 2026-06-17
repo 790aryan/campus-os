@@ -12,7 +12,8 @@ export default function EventDetailsPage() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 const [error, setError] = useState("");
-
+const [registering, setRegistering] = useState(false);
+const [unregistering, setUnregistering] = useState(false);
 useEffect(() => {
   const fetchEvent = async () => {
     try {
@@ -27,32 +28,44 @@ useEffect(() => {
 
   fetchEvent();
 }, [id]);
-  const register = async () => {
-    try {
-      await api.post(`/registrations/${id}`);
-      toast.success("Registered");
-      setEvent((current) => ({
-              ...current,
-              registrationCount: current.registrationCount + 1,
-              isRegistered: true
-            }));
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Registration failed");
-    }
-  };
-  const unregister = async () => {
+ const register = async () => {
+  if (registering || event.isRegistered) return;
+
   try {
+    setRegistering(true);
+
+    await api.post(`/registrations/${id}`);
+
+    toast.success("Registered");
+
+    const { data } = await api.get(`/events/${id}`);
+    setEvent(data);
+
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Registration failed"
+    );
+  } finally {
+    setRegistering(false);
+  }
+};
+  const unregister = async () => {
+  if (unregistering || !event.isRegistered) return;
+
+  try {
+    setUnregistering(true);
+
     await api.delete(`/registrations/${id}`);
 
     toast.success("Unregistered");
 
-    setEvent((current) => ({
-      ...current,
-      registrationCount: Math.max(0, current.registrationCount - 1),
-      isRegistered: false
-    }));
+    const { data } = await api.get(`/events/${id}`);
+    setEvent(data);
+
   } catch (error) {
     toast.error(error.response?.data?.message || "Failed");
+  } finally {
+    setUnregistering(false);
   }
 };
  if (loading) {
@@ -91,15 +104,17 @@ if (error) {
       <button
         className="btn-secondary"
         onClick={unregister}
+        disabled={unregistering}
       >
-        Unregister
+        {unregistering ? "Unregistering..." : "Unregister"}
       </button>
     ) : (
       <button
         className="btn-primary"
         onClick={register}
+        disabled={registering}
       >
-        Register
+        {registering ? "Registering..." : "Register"}
       </button>
     )}
   </div>

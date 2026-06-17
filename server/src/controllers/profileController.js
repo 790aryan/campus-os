@@ -3,6 +3,7 @@ import { StudentProfile } from "../models/StudentProfile.js";
 import { ClubProfile } from "../models/ClubProfile.js";
 import { Interest } from "../models/Interest.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { RecommendationCache } from "../models/RecommendationCache.js";
 
 export const getProfile = asyncHandler(async (req, res) => {
   const profile = req.user.role === "student" ? await StudentProfile.findOne({ user: req.user._id }) : await ClubProfile.findOne({ user: req.user._id });
@@ -17,6 +18,9 @@ export const updateStudentProfile = asyncHandler(async (req, res) => {
     await Interest.bulkWrite(profileFields.interests.map((interest) => ({ updateOne: { filter: { name: interest }, update: { $setOnInsert: { name: interest } }, upsert: true } })));
   }
   const profile = await StudentProfile.findOneAndUpdate({ user: req.user._id }, profileFields, { new: true });
+  await RecommendationCache.deleteOne({
+  student: req.user._id
+  });
   const user = await User.findById(req.user._id).select("-password");
   res.json({ user, profile });
 });
