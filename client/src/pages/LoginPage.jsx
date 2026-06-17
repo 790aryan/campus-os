@@ -36,7 +36,17 @@ export default function LoginPage() {
           <input className="input" type="password" required placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           <button className="btn-primary w-full" disabled={loading}><LogIn size={18} /> Login</button>
         </div>
-        <p className="mt-4 text-sm text-neutral-500">New here? <Link className="font-bold text-brand" to={role === "club_admin" ? "/signup/club" : "/signup/student"}>Create account</Link></p>
+          {role !== "super_admin" && (
+          <p className="mt-4 text-sm text-neutral-500">
+          New here?{" "}
+          <Link
+          className="font-bold text-brand"
+          to={role === "club_admin" ? "/signup/club" : "/signup/student"}
+          >
+          Create account
+          </Link>
+          </p>
+          )}
       </form>
     </main>
   );

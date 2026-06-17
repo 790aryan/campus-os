@@ -24,6 +24,14 @@ export const signupStudent = asyncHandler(async (req, res) => {
 
 export const signupClub = asyncHandler(async (req, res) => {
   const { name, email, password, clubName, category, description, contactEmail } = req.body;
+  const existingClub = await ClubProfile.findOne({
+    clubName: clubName.trim()
+  });
+
+  if (existingClub) {
+    throw new ApiError(400, "Club name already exists");
+  }
+  
   const user = await User.create({ name, email, password, role: "club_admin" });
   await ClubProfile.create({ user: user._id, clubName, category, description, contactEmail });
   res.status(201).json(await authResponse(user));

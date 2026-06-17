@@ -62,6 +62,16 @@ export const createEvent = asyncHandler(async (req, res) => {
   let poster = { url: req.body.posterUrl || "", publicId: "" };
   if (req.file) poster = await uploadImageBuffer(req.file.buffer);
   const club = await ClubProfile.findOne({ user: req.user._id });
+  if (!club) {
+  throw new ApiError(404, "Club profile not found");
+}
+
+if (!club.isApproved) {
+  throw new ApiError(
+    403,
+    "Your club must be approved by an admin before creating events"
+  );
+}
   const deadline = new Date(req.body.deadline);
 const eventDate = new Date(req.body.eventDate);
 
