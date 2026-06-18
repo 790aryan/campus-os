@@ -10,7 +10,21 @@ export default function CreateEventPage() {
   const submit = async (payload) => {
     setSubmitting(true);
     try {
-      await api.post("/events", payload);
+      const formData = new FormData();
+
+      Object.entries(payload).forEach(([key, value]) => {
+        if (key === "tags") {
+          value.forEach((tag) => formData.append("tags", tag));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      await api.post("/events", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
       toast.success("Event created");
       navigate("/club");
     } catch (error) {

@@ -91,7 +91,9 @@ if (deadline >= eventDate) {
 }
   const event = await Event.create({
     ...req.body,
-    tags: req.body.tags || [],
+    tags: Array.isArray(req.body.tags)
+  ? req.body.tags
+  : JSON.parse(req.body.tags || "[]"),
     poster,
     clubAdmin: req.user._id,
     clubName: club?.clubName
@@ -111,7 +113,13 @@ export const updateEvent = asyncHandler(async (req, res) => {
     } = req.body;
 
   Object.assign(event, allowedFields, {
-    tags: req.body.tags || event.tags
+    tags: req.body.tags
+  ? (
+      Array.isArray(req.body.tags)
+        ? req.body.tags
+        : JSON.parse(req.body.tags)
+    )
+  : event.tags
   });
     if (
     req.body.capacity &&

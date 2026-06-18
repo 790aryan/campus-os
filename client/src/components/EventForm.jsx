@@ -6,7 +6,7 @@ export default function EventForm({ initialEvent, onSubmit, submitting }) {
   const [form, setForm] = useState({
     title: initialEvent?.title || "",
     description: initialEvent?.description || "",
-    posterUrl: initialEvent?.poster?.url || "",
+    poster: null,
     deadline: toInputDateTime(initialEvent?.deadline),
     eventDate: toInputDateTime(initialEvent?.eventDate),
     venue: initialEvent?.venue || "",
@@ -63,7 +63,12 @@ export default function EventForm({ initialEvent, onSubmit, submitting }) {
         <input className="input" placeholder="Eligibility" value={form.eligibility} onChange={(e) => update("eligibility", e.target.value)} />
         <input className="input" type="number" min="0" placeholder="Capacity, 0 for unlimited" value={form.capacity} onChange={(e) => update("capacity", e.target.value)} />
       </div>
-      <input className="input" placeholder="Poster image URL" value={form.posterUrl} onChange={(e) => update("posterUrl", e.target.value)} />
+      <input
+        className="input"
+        type="file"
+        accept="image/*"
+        onChange={(e) => update("poster", e.target.files[0])}
+      />
       <input className="input" placeholder="Tags, comma separated" value={form.tags} onChange={(e) => update("tags", e.target.value)} />
       <button className="btn-primary w-fit" disabled={submitting}><Save size={18} /> Save event</button>
     </form>
