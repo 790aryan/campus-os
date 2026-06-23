@@ -19,7 +19,13 @@ export default function ClubDashboard() {
   };
   useEffect(() => {
     load();
+    socket.on("connect", () => {
+    console.log(
+      "SOCKET CONNECTED:",
+      socket.id
+    );
 
+  });
     const handleRegistrationUpdate = (
       data
     ) => {
@@ -44,7 +50,11 @@ export default function ClubDashboard() {
 
     socket.on(
       "attendance_update",
-      () => {
+      (data) => {
+        console.log(
+          "ATTENDANCE UPDATE RECEIVED:",
+          data
+        );
         load();
       }
     );
@@ -72,7 +82,8 @@ export default function ClubDashboard() {
         localStorage.getItem("campus_token");
 
       const response = await fetch(
-        `http://localhost:5000/api/events/${eventId}/export`,
+        // `http://localhost:5000/api/events/${eventId}/export`,
+        `${import.meta.env.VITE_API_URL}/events/${eventId}/export`,
         {
           headers: {
             Authorization: `Bearer ${token}`
