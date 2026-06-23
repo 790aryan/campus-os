@@ -55,9 +55,15 @@ export default function ClubDashboard() {
           "ATTENDANCE UPDATE RECEIVED:",
           data
         );
+
+        toast.success(
+          "Dashboard reloading..."
+        );
         load();
       }
     );
+
+
 
     return () => {
       socket.off(
