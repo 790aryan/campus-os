@@ -13,6 +13,9 @@ import verificationRoutes from "./routes/verificationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import interestRoutes from "./routes/interestRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
 
 export const app = express();
 
@@ -32,5 +35,9 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/interests", interestRoutes);
+app.use("/api/attendance",attendanceRoutes);
+app.use("/api/certificates", certificateRoutes);
+app.use("/api/test-email", testRoutes);
+
 app.use(notFound);
 app.use(errorHandler);

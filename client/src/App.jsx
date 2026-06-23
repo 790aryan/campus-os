@@ -17,11 +17,19 @@ import SettingsPage from "./pages/SettingsPage.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import StudentSignupPage from "./pages/StudentSignupPage.jsx";
 import VerificationPage from "./pages/VerificationPage.jsx";
+import QRScannerPage from "./pages/QRScannerPage.jsx";
+import CertificateVerificationPage from "./pages/CertificateVerificationPage.jsx";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/verify-certificate/:registrationId"
+        element={
+          <CertificateVerificationPage />
+        }
+      />
       <Route path="/login/:type" element={<LoginPage />} />
       <Route path="/signup/student" element={<StudentSignupPage />} />
       <Route path="/signup/club" element={<ClubSignupPage />} />
@@ -46,6 +54,11 @@ export default function App() {
           <Route path="/events/new" element={<CreateEventPage />} />
           <Route path="/events/:id/edit" element={<EditEventPage />} />
           <Route path="/events/:id/registrants" element={<EventRegistrantsPage />} />
+          <Route path="/scan-attendance" element={<QRScannerPage />} />
+          <Route
+            path="/scan-attendance"
+            element={<QRScannerPage />}
+          />
         </Route>
       </Route>
       <Route element={<ProtectedRoute roles={["super_admin"]} />}>

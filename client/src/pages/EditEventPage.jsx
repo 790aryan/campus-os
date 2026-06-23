@@ -32,7 +32,21 @@ export default function EditEventPage() {
 }, [id, navigate, currentUser]);
   const submit = async (payload) => {
   try {
-    await api.put(`/events/${id}`, payload);
+    const formData = new FormData();
+
+    Object.entries(payload).forEach(([key, value]) => {
+      if (key === "tags") {
+        formData.append(key, JSON.stringify(value));
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+
+    await api.put(`/events/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     toast.success("Event updated");
     navigate("/club");

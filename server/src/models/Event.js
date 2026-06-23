@@ -19,7 +19,17 @@ const eventSchema = new mongoose.Schema(
     status: { type: String, enum: ["active", "archived", "moderated"], default: "active", index: true },
     archiveReason: { type: String, default: "" },
     capacity: { type: Number, default: 0 },
-    registrationCount: { type: Number, default: 0 }
+
+    registrationCount: {
+      type: Number,
+      default: 0
+    },
+
+    waitlistCount: {
+      type: Number,
+      default: 0
+    }
+    
   },
   { timestamps: true }
 );

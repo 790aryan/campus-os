@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../api/api.js";
+import { socket } from "../socket.js";
+
 
 const AuthContext = createContext(null);
 
@@ -20,6 +22,17 @@ export const AuthProvider = ({ children }) => {
     if (!localStorage.getItem("campus_token")) return;
     refreshMe().finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (user?._id) {
+
+      socket.emit("join", {
+        userId: user._id,
+        role: user.role
+      });
+
+    }
+  }, [user]);
 
   const login = async (payload) => {
     const { data } = await api.post("/auth/login", payload);

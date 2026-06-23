@@ -8,3 +8,9 @@ export const uploadImageBuffer = (fileBuffer, folder = "campus-events") =>
     });
     stream.end(fileBuffer);
   });
+
+  export const deleteImage = async (publicId) => {
+  if (!publicId) return;
+
+  await cloudinary.uploader.destroy(publicId);
+};

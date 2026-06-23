@@ -14,8 +14,16 @@ const authResponse = async (user) => {
 
 export const signupStudent = asyncHandler(async (req, res) => {
   const { name, email, password, rollNumber, department, year, phoneNumber, interests } = req.body;
+
+  const existingRoll = await StudentProfile.findOne({
+  rollNumber: rollNumber.trim().toUpperCase()
+  });
+
+  if (existingRoll) {
+  throw new ApiError(400, "Roll number already registered");
+  }
   const user = await User.create({ name, email, password, role: "student" });
-  const cleanInterests = [...new Set(interests.map((item) => item.toLowerCase().trim()))];
+  const cleanInterests = [...new Set((interests || []).map((item) => item.toLowerCase().trim()))];
   await StudentProfile.create({ user: user._id, rollNumber, department, year, phoneNumber, interests: cleanInterests });
   await VerificationRequest.create({ student: user._id, rollNumber, department, year });
   await Interest.bulkWrite(cleanInterests.map((name) => ({ updateOne: { filter: { name }, update: { $setOnInsert: { name } }, upsert: true } })));
@@ -31,7 +39,7 @@ export const signupClub = asyncHandler(async (req, res) => {
   if (existingClub) {
     throw new ApiError(400, "Club name already exists");
   }
-  
+
   const user = await User.create({ name, email, password, role: "club_admin" });
   await ClubProfile.create({ user: user._id, clubName, category, description, contactEmail });
   res.status(201).json(await authResponse(user));

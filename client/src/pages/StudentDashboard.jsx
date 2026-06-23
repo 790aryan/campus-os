@@ -16,7 +16,11 @@ export default function StudentDashboard() {
     api.get("/events", { params }).then(({ data }) => setEvents(data));
   }, [filters]);
   useEffect(() => {
-    api.get("/recommendations/me").then(({ data }) => setRecommendations(data));
+    api.get("/recommendations/me").then(({ data }) => setRecommendations(
+      [...data].sort(
+        (a, b) => (b.score || 0) - (a.score || 0)
+      )
+    ));
     api.get("/registrations/me").then(({ data }) => setRegistrations(data));
   }, []);
   return (
@@ -27,9 +31,29 @@ export default function StudentDashboard() {
         <StatCard label="Recommendations" value={recommendations.length} icon={Sparkles} />
       </div>
       <section>
-        <h2 className="mb-4 text-xl font-black">Recommended for You</h2>
-        {recommendations.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{recommendations.map((item) => <EventCard key={item.event._id} event={item.event} reason={item.reason} />)}</div> : <EmptyState title="No recommendations yet" text="Add interests to your profile to improve matches." />}
-      </section>
+  <h2 className="mb-4 text-xl font-black">
+    Recommended for You
+  </h2>
+
+  {recommendations.length ? (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {recommendations.map((item,index) => (
+        <EventCard
+          key={item.event._id}
+          event={item.event}
+          reason={item.reason}
+          score={item.score}
+          isTopPick={index === 0}
+        />
+      ))}
+    </div>
+  ) : (
+    <EmptyState
+      title="No recommendations yet"
+      text="Add interests to your profile to improve matches."
+    />
+  )}
+</section>
       <section className="space-y-4">
         <h2 className="text-xl font-black">Browse Events</h2>
         <EventFilters filters={filters} setFilters={setFilters} />

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const verificationRequestSchema = new mongoose.Schema(
   {
-    student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true},
     rollNumber: { type: String, required: true, uppercase: true, trim: true },
     department: { type: String, required: true },
     year: { type: Number, required: true },

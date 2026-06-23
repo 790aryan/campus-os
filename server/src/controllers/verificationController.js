@@ -8,18 +8,49 @@ export const getMyVerification = asyncHandler(async (req, res) => {
   res.json(request);
 });
 
-export const requestVerification = asyncHandler(async (req, res) => {
-  const profile = await StudentProfile.findOne({ user: req.user._id });
-  const request = await VerificationRequest.create({
-    student: req.user._id,
-    rollNumber: profile.rollNumber,
-    department: profile.department,
-    year: profile.year
-  });
-  profile.verificationStatus = "pending";
-  await profile.save();
-  res.status(201).json(request);
-});
+export const requestVerification = asyncHandler(
+  async (req, res) => {
+
+    const profile =
+      await StudentProfile.findOne({
+        user: req.user._id
+      });
+
+    let request =
+      await VerificationRequest.findOne({
+        student: req.user._id
+      });
+
+    if (request) {
+
+      request.status = "pending";
+      request.note = "";
+      request.reviewedBy = null;
+      request.reviewedAt = null;
+
+      await request.save();
+
+    } else {
+
+      request =
+        await VerificationRequest.create({
+          student: req.user._id,
+          rollNumber:
+            profile.rollNumber,
+          department:
+            profile.department,
+          year: profile.year
+        });
+    }
+
+    profile.verificationStatus =
+      "pending";
+
+    await profile.save();
+
+    res.status(201).json(request);
+  }
+);
 
 export const listVerificationRequests = asyncHandler(async (_req, res) => {
   const requests = await VerificationRequest.find().populate("student", "name email").sort({ createdAt: -1 });
